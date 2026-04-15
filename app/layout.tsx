@@ -13,7 +13,7 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'student game',
+  title: 'CozyConnect',
   description: 'A cozy game to help international students connect socially while studying abroad',
 }
 
