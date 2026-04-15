@@ -5,7 +5,8 @@ import { useGame } from '@/lib/game-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, Circle, Coins, RefreshCw, Users, Heart, BookOpen, Globe } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import { CheckCircle2, Circle, Coins, RefreshCw, Users, Heart, BookOpen, Globe, X, Send } from 'lucide-react'
 
 const categoryIcons = {
   social: Users,
@@ -30,6 +31,8 @@ const difficultyColors = {
 export function TasksPanel() {
   const { state, completeTask, resetTasks } = useGame()
   const [filter, setFilter] = useState<string>('all')
+  const [selectedTask, setSelectedTask] = useState<string | null>(null)
+  const [reflection, setReflection] = useState('')
   
   const completedCount = state.tasks.filter(t => t.completed).length
   const totalCoinsEarned = state.tasks
@@ -39,6 +42,26 @@ export function TasksPanel() {
   const filteredTasks = filter === 'all' 
     ? state.tasks 
     : state.tasks.filter(t => t.category === filter)
+
+  const selectedTaskData = state.tasks.find(t => t.id === selectedTask)
+
+  const handleTaskClick = (taskId: string) => {
+    setSelectedTask(taskId)
+    setReflection('')
+  }
+
+  const handleSubmitReflection = () => {
+    if (selectedTask && reflection.trim().length >= 10) {
+      completeTask(selectedTask)
+      setSelectedTask(null)
+      setReflection('')
+    }
+  }
+
+  const handleCancel = () => {
+    setSelectedTask(null)
+    setReflection('')
+  }
 
   return (
     <Card className="h-full border-2 border-primary/20">
@@ -94,7 +117,7 @@ export function TasksPanel() {
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-3 max-h-[400px] overflow-y-auto">
+      <CardContent className="space-y-3 overflow-y-auto">
         {filteredTasks.map((task) => {
           const CategoryIcon = categoryIcons[task.category]
           
@@ -109,9 +132,9 @@ export function TasksPanel() {
             >
               <div className="flex items-start gap-3">
                 <button
-                  onClick={() => !task.completed && completeTask(task.id)}
+                  onClick={() => !task.completed && handleTaskClick(task.id)}
                   disabled={task.completed}
-                  className="mt-0.5 flex-shrink-0"
+                  className="mt-0.5"
                 >
                   {task.completed ? (
                     <CheckCircle2 className="h-5 w-5 text-primary" />
@@ -150,6 +173,68 @@ export function TasksPanel() {
           )
         })}
       </CardContent>
+
+      {/* Reflection Modal */}
+      {selectedTask && selectedTaskData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-xl shadow-xl max-w-md w-full p-6 border-2 border-primary/20">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-foreground">Complete Task</h3>
+              <button 
+                onClick={handleCancel}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+              <h4 className="font-medium text-foreground">{selectedTaskData.title}</h4>
+              <p className="text-sm text-muted-foreground mt-1">{selectedTaskData.description}</p>
+              <Badge variant="secondary" className="mt-2 text-xs flex items-center gap-1 w-fit">
+                <Coins className="h-3 w-3 text-amber-500" />
+                +{selectedTaskData.coins} coins
+              </Badge>
+            </div>
+            
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-sm font-medium text-foreground">
+                  How did you complete this task? How did it make you feel?
+                </span>
+                <Textarea
+                  value={reflection}
+                  onChange={(e) => setReflection(e.target.value)}
+                  placeholder="Example: I said hi to someone in my class today. It felt a bit nervous at first but they were friendly and we talked about the lecture..."
+                  className="mt-2 resize-none"
+                />
+              </label>
+              
+              <p className="text-xs text-muted-foreground">
+                Write at least 10 characters to share your experience
+              </p>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmitReflection}
+                  disabled={reflection.trim().length < 10}
+                  className="flex-1 gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  Complete Task
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }
