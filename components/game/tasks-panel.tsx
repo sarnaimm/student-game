@@ -205,7 +205,7 @@ export function TasksPanel() {
                 <Textarea
                   value={reflection}
                   onChange={(e) => setReflection(e.target.value)}
-                  placeholder="Example: I said hi to someone in my class today. It felt a bit nervous at first but they were friendly and we talked about the lecture..."
+                  placeholder="Example: I said hi to someone in my class today. It felt a bit nervous..."
                   className="mt-2 resize-none"
                 />
               </label>
